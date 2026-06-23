@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/Apierrors.js";
 import{uploadOnCloudinary} from "../utils/cloudinary.js"
+import {ApiResponse} from "../utils/apiresponse.js"
 import { User } from "../models/user.models.js";
 const registerUser = asyncHandler(async (req, res) => {
    // get user  details from frontend
@@ -53,9 +54,16 @@ const registerUser = asyncHandler(async (req, res) => {
     username : username.toLowerCase()
  })
 
-  const creteuser = await User.findbyId(user._Id)
+  const creteduser = await User.findbyId(user._Id).select(
+    " -password - refreshToken"
+  )
+  if(!creteduser){
+    throw new Apierror (500 , "unble to restore  the regitering user ")
+  }
 
-
+return res.status(201).json(
+    new Apiresponse(200,creteduser,"user registerd succesfully")
+)
 
 
 
