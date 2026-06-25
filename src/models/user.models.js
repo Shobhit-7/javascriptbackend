@@ -29,12 +29,13 @@ const userSchema = new Schema(
     },
 
     avatar: {
-      type: String, // Cloudinary URL
+      type: String,
       required: true,
     },
 
     coverImage: {
-      type: String, // Cloudinary URL
+      type: String,
+      default: "",
     },
 
     watchHistory: [
@@ -46,7 +47,7 @@ const userSchema = new Schema(
 
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: true,
     },
 
     refreshToken: {
@@ -58,20 +59,19 @@ const userSchema = new Schema(
   }
 );
 
-// Hash password before save
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+// Password hash
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
-// Compare password
+// Password compare
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// Generate Access Token
+// Access token
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -87,7 +87,7 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
-// Generate Refresh Token
+// Refresh token
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
